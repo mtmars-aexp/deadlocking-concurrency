@@ -1,0 +1,26 @@
+Q: "In multi-threaded code, the standard paradigm of 'test whether a value is in the map; if not, then add it' isn't safe, why not?"
+A: Methods like .putIfAbsent() in regular hashmaps are unsafe, as "test whether a value is in the map" and "add it" are two seperate commands carried out by the CPU.
+Because of this degree of separation, commands from other threads could become interwoven, and result in anomalous data.
+For example:
+In a program with only one main thread, the output of the following program:
+
+hashMap.put("Bill","Gates")
+hashMap.putIfAbsent("Bill,"Gates")
+
+Will result in a hashmap with only one entry ("Bill").
+
+However, in a program with multiple threads, the output of the same program could have varying results.
+Depending on what thread executes first, which is seemingly up to random chance, the hashmap could have either one or two entries.
+The order of operations could be as follows:
+
+1) First thread puts "Bill" into hashmap.
+2) Second thread checks if "Bill" is in hashmap- it is. Don't add anything.
+
+or 
+
+1) First thread checks if "Bill" is in hashmap- it isn't.
+2) Second thread puts "Bill" into hashmap.
+3) First thread puts "Bill" into hashmap due to found absence.
+
+The standard paradigm of 'test whether or a value is in the map; if not, then add it' isn't safe because it relies on data being consistent between lines of code,
+multithreaded programming messes with this paradigm by altering data inbetween individual (concurrent sets of) operations.
